@@ -1,0 +1,43 @@
+name: CodeCommit to GitHub Actions Migration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate_repos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Clone CodeCommit repositories
+        run: |
+          # Define the list of CodeCommit repositories
+          repos=("repo1" "repo2" "repo3")
+
+          # Loop over each repository and clone it
+          for repo in "${repos[@]}"; do
+            git clone <codecommit-repo-url>/$repo
+            cd $repo
+
+            # Create GitHub repository
+            run: |
+              # Authenticate with your GitHub credentials
+              # Replace <github-token> with your GitHub personal access token
+              echo "<github-token>" > token.txt
+              gh auth login --with-token < token.txt
+
+              # Create a new GitHub repository
+              gh repo create <github-repo-name> --confirm --public
+
+            # Push to GitHub repository
+            run: |
+              git remote set-url origin <github-repo-url>/$repo
+              git push --mirror
+
+            # Cleanup
+            run: |
+              cd ..
+              rm -rf $repo
+          done
